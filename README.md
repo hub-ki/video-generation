@@ -12,11 +12,9 @@ Concept first, then the footage, in the brand you give it.
 
 <br>
 
-<a href="https://youtu.be/sVfOqokOW98"><img src="docs/media/poster.jpg" alt="Title card reading &quot;Directed by Claude — Let AI use your App&quot;. Click to watch on YouTube." width="720"></a>
+<img src="docs/media/hero.gif" alt="Thirty seconds of a finished video: a title card, then an agent reading a calendar and writing a handover document, each shot carrying a caption." width="720">
 
-**▶ [Directed by Claude](https://youtu.be/sVfOqokOW98)** — five minutes on how this works, shot with the skills in this repo.
-
-<sub>The look is HUB.KI&#39;s own house style. What ships in the box is neutral black and white,<br>and takes the brand you give it.</sub>
+<sub>Thirty seconds of a video these skills produced, end to end. The look is HUB.KI&#39;s own house style —<br>what ships in the box is neutral black and white, and takes the brand you give it.</sub>
 
 </div>
 
