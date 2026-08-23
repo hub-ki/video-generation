@@ -7,7 +7,7 @@ Concept first, then the footage, in the brand you give it.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-black.svg)](LICENSE)
 ![Node 18+](https://img.shields.io/badge/node-18%2B-black.svg)
-![Checks: 56](https://img.shields.io/badge/checks-56-black.svg)
+![Checks: 58](https://img.shields.io/badge/checks-58-black.svg)
 ![Platforms: macOS · Linux](https://img.shields.io/badge/platforms-macOS%20%C2%B7%20Linux-black.svg)
 
 <br>
@@ -136,7 +136,7 @@ npm test
 
 Frontmatter validation first — a `SKILL.md` description over the loader's 1024-character limit is
 rejected outright, the skill never starts, and nothing says so; both skills shipped that way once.
-Then 56 checks over 26 deterministic `file://` fixtures, no network. Every fixture is a defect that actually
+Then 58 checks over 26 deterministic `file://` fixtures, no network. Every fixture is a defect that actually
 happened, including the negative cases: a sticky header offering "Accept invitation", a responsive
 embed, an application delivered as a full-viewport iframe.
 

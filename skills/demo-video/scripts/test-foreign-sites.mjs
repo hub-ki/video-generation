@@ -108,22 +108,38 @@ await withFixture('reveal.html', async (page) => {
   const target = await findByText(page, /Pricing from/);
   check('finds the target', Boolean(target));
 
-  // The CONTAINER is translucent while the target itself is opacity:1. Held there rather than
-  // caught mid-fade: the refusal names which rule fired, and on a loaded machine a probe can
-  // arrive after the transition has finished, where the honest answer is a different rule.
-  await page.evaluate(() => {
+  // A CONTAINER at zero while the target itself is opacity:1 — what a scroll-reveal that never
+  // runs headless leaves behind. Held there rather than caught mid-fade, so the refusal names
+  // which rule fired whatever the machine's load does to the probe's timing.
+  const holdContainerAt = (value) => page.evaluate((opacity) => {
     const card = document.getElementById('card');
     card.style.transition = 'none';
-    card.style.opacity = '0.15';
-  });
+    card.style.opacity = opacity;
+  }, value);
+
+  await holdContainerAt('0');
   await scrollToElement(target);
   let refused = false;
   try {
     await stableRect(target, { timeoutMs: 400, framesStill: 3 });
   } catch (error) {
-    refused = /transparent/.test(error.message);
+    refused = /invisible/.test(error.message);
   }
-  check('refuses a target inside a translucent container', refused);
+  check('refuses a target inside an invisible container', refused);
+
+  // …but a container a designer deliberately set to .8 is a value, not an unfinished animation.
+  // Refusing it is unfixable by definition: no amount of waiting settles a design decision.
+  await holdContainerAt('0.8');
+  let translucentRect = null;
+  try {
+    translucentRect = await stableRect(target, { timeoutMs: 1500, framesStill: 3 });
+  } catch (error) {
+    translucentRect = { error: error.message };
+  }
+  check('films a container held at a deliberate .8', translucentRect?.settled === true,
+    JSON.stringify(translucentRect));
+  check('and says it is translucent', translucentRect?.translucent === true,
+    JSON.stringify(translucentRect));
 
   await page.evaluate(() => {
     const card = document.getElementById('card');

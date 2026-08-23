@@ -50,9 +50,40 @@ const E = (m) => errors.push(m), W = (m) => warns.push(m), N = (m) => notes.push
 const MIN_CLEAR = 6, COMFY_CLEAR = 10, INK = 45;
 
 const cssBlock = (sel) => html.match(new RegExp(`\\${sel}\\s*\\{([^}]*)\\}`))?.[1] ?? '';
+
+// The shipped template sizes everything as a ratio of the frame — `calc(var(--h) * .059)` — so a
+// parser that only understands literal pixels reads NaN for every box. NaN then loses every
+// comparison below, and a verifier that answers "no problems found" to a question it never asked
+// is worse than one that fails: the run this was found in reported success on unreadable geometry.
+const ROOT_VARS = new Map();
+for (const [, name, value] of cssBlock(':root').matchAll(/(--[\w-]+)\s*:\s*(-?[\d.]+)px/g)) {
+  ROOT_VARS.set(name, +value);
+}
+const cssValue = (raw) => {
+  const text = raw.trim();
+  let m = /^(-?[\d.]+)px$/.exec(text);
+  if (m) return +m[1];
+  if (/^-?0$/.test(text)) return 0;
+  m = /^var\(\s*(--[\w-]+)\s*\)$/.exec(text);
+  if (m) return ROOT_VARS.has(m[1]) ? ROOT_VARS.get(m[1]) : NaN;
+  m = /^calc\(\s*var\(\s*(--[\w-]+)\s*\)\s*\*\s*(-?[\d.]+)\s*\)$/.exec(text);
+  if (m) return ROOT_VARS.has(m[1]) ? ROOT_VARS.get(m[1]) * +m[2] : NaN;
+  return NaN;
+};
+const cssRaw = (blk, prop) =>
+  blk.match(new RegExp(`(?:^|[;{])\\s*${prop}\\s*:\\s*([^;}]+)`))?.[1];
 const cssPx = (blk, prop) => {
-  const m = blk.match(new RegExp(`(?:^|[;{])\\s*${prop}\\s*:\\s*(-?[\\d.]+)px`));
-  return m ? +m[1] : NaN;
+  const raw = cssRaw(blk, prop);
+  if (raw !== undefined) return cssValue(raw);
+  // `inset: 0` is the shorthand the full-bleed default uses; it sets all four edges at once.
+  const inset = cssRaw(blk, 'inset');
+  if (inset !== undefined && ['left', 'top', 'right', 'bottom'].includes(prop)) {
+    const parts = inset.trim().split(/\s+/).map(cssValue);
+    if (parts.length === 1) return parts[0];
+    const [top, right = top, bottom = top, left = right] = parts;
+    return { top, right, bottom, left }[prop];
+  }
+  return NaN;
 };
 const winCss = cssBlock('.win'), scrimCss = cssBlock('.scrim'), ovCss = cssBlock('.ov');
 const WIN = { left: cssPx(winCss,'left'), top: cssPx(winCss,'top'),
@@ -132,6 +163,20 @@ const snapNear = (t) => snaps.map((s) => ({ ...s, d: Math.abs(s.t - t) })).sort(
 const missing = [];        // snapshot times a card check needs before it can decide
 const unverified = [];     // checks that could not run at all — never a silent pass
 const U = (m) => unverified.push(m);
+
+// Every geometry check below multiplies and compares these. NaN loses every comparison silently,
+// so an unreadable box has to be said out loud here or the whole file reports a clean pass on
+// numbers it never had.
+for (const [label, value] of [
+  ['.win left', WIN.left], ['.win top', WIN.top], ['.win width', WIN.w], ['.win height', WIN.h],
+  ['.ov left', OV.left], ['.ov bottom', OV.bottom],
+]) {
+  if (!Number.isFinite(value)) {
+    U(`${label} in index.html is not a number this script can read. It understands `
+      + `<n>px, 0, var(--x) and calc(var(--x) * <n>) against the :root variables. `
+      + `Every spotlight and card check that needs it was skipped.`);
+  }
+}
 
 // ── the source asset behind a beat, and its scale into the window ───────────
 const assetFor = (beat) => {

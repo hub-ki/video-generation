@@ -1408,10 +1408,17 @@ export async function scrollToElement(locator, {
  * `settled: false` is not something to fix with a longer timeout — something is still animating.
  * `inViewport: false` means the rect is real but off-screen, which is what a scroll that silently
  * did nothing looks like; `required` turns both into errors.
+ *
+ * Stability and opacity are separate questions, and conflating them cost a real capture: a site
+ * that styles a panel `opacity: .8` on purpose was reported as an animation that never finished,
+ * which is unfixable by definition — waiting longer does not change a design decision. What is
+ * unfilmable is a target at effectively zero, which is what a scroll-reveal that never runs
+ * headless leaves behind. So: movement decides `settled`, `invisibleAt` decides filmable, and a
+ * stable value in between is returned with `translucent: true` for the caller to judge.
  */
 export async function stableRect(locator, {
   framesStill = 6, tolerancePx = 1, timeoutMs = 8000, required = true, minOpacity = 0.95,
-  requireInViewport = true,
+  invisibleAt = 0.05, requireInViewport = true,
 } = {}) {
   // The in-page deadline below is checked from requestAnimationFrame, so it cannot fire if the
   // renderer stops producing frames (backgrounded tab, a stalled compositor). That is the same
@@ -1449,8 +1456,9 @@ export async function stableRect(locator, {
         || ['x', 'y', 'width', 'height'].some((key) => Math.abs(current[key] - previous[key]) > options.tolerancePx)
         || Math.abs(current.opacity - previous.opacity) > 0.01
         || current.transform !== previous.transform;
-      const visible = current.opacity > options.minOpacity;
-      stillFrames = (moved || !visible) ? 0 : stillFrames + 1;
+      // Movement only. A held opacity is a value, not an animation in progress — judging it here
+      // is what made a deliberate `opacity: .8` unfilmable, since no amount of waiting settles it.
+      stillFrames = moved ? 0 : stillFrames + 1;
       previous = current;
       if (stillFrames >= options.framesStill) return resolve({ ...current, settled: true });
       if (performance.now() - startedAt > options.timeoutMs) return resolve({ ...current, settled: false });
@@ -1474,6 +1482,7 @@ export async function stableRect(locator, {
     width: Math.round(measured.width), height: Math.round(measured.height),
     opacity: +measured.opacity.toFixed(2),
     settled: measured.settled,
+    translucent: measured.opacity < minOpacity,
     inViewport: measured.inViewport,
   };
 
@@ -1481,11 +1490,16 @@ export async function stableRect(locator, {
     throw new Error(
       `stableRect: the target never held still for ${framesStill} frames within ${timeoutMs}ms `
       + `(last ${rect.width}x${rect.height} at ${rect.x},${rect.y}, effective opacity ${rect.opacity}). `
-      + (rect.opacity <= minOpacity
-        ? 'It is still transparent — a scroll-reveal animation has not finished, or never runs headless. '
-          + 'The opacity is measured through the ancestor chain, so a fading CONTAINER shows up here too.'
-        : 'Something is animating it. Freeze the motion or pick another target.')
-      + ' A rect measured mid-reflow spotlights the wrong pixels.',
+      + 'Something is animating it — a reveal still running, or motion that never stops. '
+      + 'Freeze it or pick another target. A rect measured mid-reflow spotlights the wrong pixels.',
+    );
+  }
+  if (required && rect.opacity <= invisibleAt) {
+    throw new Error(
+      `stableRect: the target is settled but invisible (effective opacity ${rect.opacity}). `
+      + 'There is nothing to film. Opacity is measured through the ancestor chain, so a CONTAINER '
+      + 'at zero shows up here too — a scroll-reveal that never runs headless ends exactly like '
+      + 'this. Trigger the reveal, or film an element outside it.',
     );
   }
   if (required && requireInViewport && !measured.inViewport) {
