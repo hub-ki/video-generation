@@ -22,7 +22,7 @@
 // RESUMABLE by design: lines that already exist are skipped, and a failed line (quota,
 // rate limit) is dropped with a warning instead of aborting the run. Re-run to fill gaps.
 import { execFileSync } from 'child_process';
-import { mkdirSync, writeFileSync, existsSync, statSync, readFileSync, unlinkSync } from 'fs';
+import { mkdirSync, writeFileSync, existsSync, statSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 
 const argOf = (flag, fallback) => {
@@ -75,18 +75,27 @@ const missing = [];
 for (const section of SECTIONS) {
   const file = `${OUT}/${section.id}.mp3`;
   if (!existsSync(file) || statSync(file).size < 2000) {
-    const body = JSON.stringify({ text: section.text, model_id: MODEL, voice_settings: SETTINGS });
-    execFileSync('curl', ['-s', '-m', '180', '-o', file, '-X', 'POST',
-      `https://api.elevenlabs.io/v1/text-to-speech/${VOICE}`,
-      '-H', `xi-api-key: ${KEY}`, '-H', 'Content-Type: application/json', '-d', body]);
-    if (statSync(file).size < 2000) {
-      let reason = '';
-      try { reason = JSON.parse(readFileSync(file, 'utf8')).detail?.message || ''; } catch { /* not json */ }
-      unlinkSync(file);
+    // fetch, not curl: an argument vector is world-readable in the process list, so passing the
+    // key as `-H xi-api-key: …` hands it to every other user on the machine for the length of
+    // the call. Nothing is written until the response is known good, so a failed call cannot
+    // leave a stub behind that the `existsSync` above would later mistake for a cached line.
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE}`, {
+      method: 'POST',
+      headers: { 'xi-api-key': KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: section.text, model_id: MODEL, voice_settings: SETTINGS }),
+      signal: AbortSignal.timeout(180_000),
+    }).catch((error) => error);
+    const payload = response instanceof Error
+      ? Buffer.alloc(0)
+      : Buffer.from(await response.arrayBuffer());
+    if (response instanceof Error || !response.ok || payload.length < 2000) {
+      let reason = response instanceof Error ? response.message : '';
+      try { reason ||= JSON.parse(payload.toString('utf8')).detail?.message || ''; } catch { /* not json */ }
       missing.push({ id: section.id, reason });
-      console.warn(`  ! ${section.id}: ${reason || 'TTS returned no audio'}`);
+      console.warn(`  ! ${section.id}: ${reason || `TTS returned no audio (HTTP ${response.status})`}`);
       continue;
     }
+    writeFileSync(file, payload);
   }
   rows.push({ ...section, file, start: startOf(section.anchor), duration: durationOf(file) });
 }

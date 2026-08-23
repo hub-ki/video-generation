@@ -198,13 +198,10 @@ if [ -z "$CLI" ] || [ ! -f "$CLI" ]; then
     [ -f "$c" ] && CLI="$c" && break
   done
 fi
-# A stray copy under ~/.npm, ~/.bun or ~/code is a HINT that something is installed, never a
-# substitute: whatever version another project happens to carry is not the one the patch below was
-# written against.
-if [ -z "$CLI" ] || [ ! -f "$CLI" ]; then
-  CLI="$(find "$HOME/.npm" "$HOME/.bun" "$HOME/code" -maxdepth 7 -type f \
-         -path '*hyperframes/dist/cli.js' 2>/dev/null | head -1 || true)"
-fi
+# Deliberately no wider search. A copy found under ~/.npm, ~/.bun or anywhere else on the disk
+# belongs to another project, and the disk-check patch further down rewrites the file it is given
+# — matching the pinned version would have made this script edit a stranger's tree. The only
+# sources are: an explicit path passed in, this skill's own cache, and the project's node_modules.
 
 version_of(){ node -e 'try{process.stdout.write(require(require("path").resolve(process.argv[1],"../../package.json")).version)}catch{}' "$1" 2>/dev/null || true; }
 
@@ -231,9 +228,8 @@ elif [ "$(version_of "$CLI")" != "$HF_VERSION" ]; then
 fi
 [ -f "$CLI" ] || { say "ERROR: hyperframes CLI still not found at $CLI"; exit 1; }
 
-# The searches above accept the first cli.js they find anywhere under ~/.npm, ~/.bun or
-# ~/code — which can be any version some other project happens to have. Say which one won,
-# because a mismatch here surfaces later as a render that behaves nothing like this skill.
+# Say which copy won and at which version: a mismatch here surfaces later as a render that
+# behaves nothing like this skill, three steps away from the cause.
 CLI_VERSION="$(version_of "$CLI")"
 if [ -n "$CLI_VERSION" ] && [ "$CLI_VERSION" != "$HF_VERSION" ]; then
   say "ERROR: hyperframes is $CLI_VERSION at $CLI but this skill needs $HF_VERSION, and the"

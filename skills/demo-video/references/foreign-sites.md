@@ -33,10 +33,12 @@ Three hard lines this skill holds:
 
 1. **Public pages only, by default.** `http(s)` only. No embedded credentials in the URL. Not
    `localhost`, not `*.internal`, `*.local`, and not private, link-local or CGNAT address
-   ranges — those point at infrastructure, not at a website, and a URL check alone does not
-   cover redirects, DNS rebinding or subresource requests. If you run this as a service rather
-   than by hand, put a network layer under it that drops private ranges, and do not rely on
-   the string check.
+   ranges — those point at infrastructure, not at a website. **Nothing enforces this.** Neither
+   the capture rig nor `extract-brand.mjs` validates the URL, and a string check would not have
+   covered redirects, DNS rebinding or the subresources the page pulls in anyway. The line holds
+   because the person running it holds it. Pointing a browser at a URL somebody else chose is an
+   SSRF primitive: if this ever runs as a service rather than by hand, put network isolation
+   under it, not a deny-list.
 2. **Filming is read-only.** Do not submit forms, do not create accounts, do not write into
    someone else's production database to make a nicer shot. If a beat needs filled-in state,
    film a demo or sandbox instance.

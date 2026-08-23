@@ -7,7 +7,7 @@ Concept first, then the footage, in the brand you give it.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-black.svg)](LICENSE)
 ![Node 18+](https://img.shields.io/badge/node-18%2B-black.svg)
-![Tests: 56 fixtures](https://img.shields.io/badge/tests-56%20fixtures-black.svg)
+![Checks: 56](https://img.shields.io/badge/checks-56-black.svg)
 ![Platforms: macOS · Linux](https://img.shields.io/badge/platforms-macOS%20%C2%B7%20Linux-black.svg)
 
 <br>
@@ -51,9 +51,11 @@ Then link the two skills into whatever your agent reads:
 | Runtime | Skills directory | Status |
 | --- | --- | --- |
 | [Claude Code](https://claude.com/claude-code) | `~/.claude/skills/` | tested |
+| [Codex](https://developers.openai.com/codex/) | `~/.codex/skills/` | expected to work, untested |
 | Other `SKILL.md` loaders | runtime-specific | expected to work, untested |
 
 ```bash
+mkdir -p ~/.claude/skills                      # or ~/.codex/skills
 ln -s ~/code/video-generation/skills/video-plan  ~/.claude/skills/video-plan
 ln -s ~/code/video-generation/skills/demo-video  ~/.claude/skills/demo-video
 ```
@@ -65,7 +67,7 @@ nothing outside those two directories.
 
 ## Two-minute try
 
-No login, no API key, nothing written outside the project:
+No login, no API key, and nothing written outside the project except the two toolchain caches above:
 
 ```
 > Create a silent 1080p site tour of https://example.com. This is a smoke test.
@@ -116,7 +118,11 @@ The short version, because it is the part with consequences:
 - **Filming is read-only in intent**: no forms, no accounts, no writes. It does click consent
   buttons, hide overlays and tag the element it is about to film — client-side, in a throwaway
   profile, and worth knowing.
-- **Public pages by default.** No embedded credentials, no localhost or private address ranges.
+- **Public pages only — a rule the agent follows, not a check the code makes.** No embedded
+  credentials, no localhost, no private address ranges. Nothing validates the URL, its redirects
+  or the subresources the page pulls in. That is fine for a supervised run on your own machine and
+  is not a basis for exposing this as a service: driving a browser at an attacker-supplied URL is
+  an SSRF primitive, and the answer there is network isolation, not a deny-list.
 
 Full rules, and the questions that belong in the plan rather than in your head:
 [`references/foreign-sites.md`](skills/demo-video/references/foreign-sites.md).
@@ -130,7 +136,7 @@ npm test
 
 Frontmatter validation first — a `SKILL.md` description over the loader's 1024-character limit is
 rejected outright, the skill never starts, and nothing says so; both skills shipped that way once.
-Then 56 deterministic `file://` fixtures, no network. Every fixture is a defect that actually
+Then 56 checks over 26 deterministic `file://` fixtures, no network. Every fixture is a defect that actually
 happened, including the negative cases: a sticky header offering "Accept invitation", a responsive
 embed, an application delivered as a full-viewport iframe.
 

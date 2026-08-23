@@ -11,11 +11,23 @@ import { openRecorder, installCursor, timeline, glide, park, CSS,
          stickyInsets, scrollToElement, stableRect, assertRectHeld, findByText } from './lib.js';
 import { chromium } from 'playwright';
 import { existsSync, readdirSync, renameSync, rmSync, mkdirSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { join, resolve, sep } from 'path';
 
 const NAME = 'demo';
 const START_URL = 'https://example.com/';
+
+// NAME becomes a directory that is deleted recursively before every run, so it is checked twice:
+// as a slug, and again after resolution. A value like `../..` would otherwise take the project
+// with it, and this file is meant to be copied and edited by hand.
+if (!/^[a-z0-9][a-z0-9._-]*$/i.test(NAME)) {
+  console.error(`NAME must be a slug — letters, digits, dot, underscore, hyphen. Got ${JSON.stringify(NAME)}`);
+  process.exit(1);
+}
 const out = `out/${NAME}`;
+if (!resolve(out).startsWith(resolve('out') + sep)) {
+  console.error(`refusing to work outside out/ — ${NAME} resolves to ${resolve(out)}`);
+  process.exit(1);
+}
 
 // OWN APP, behind a login          -> keep this, run `bun run auth` first (a human signs in)
 // PUBLIC WEBSITE you do not own    -> set STATE = null

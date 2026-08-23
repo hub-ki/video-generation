@@ -37,7 +37,7 @@ literal — read the paragraph below before assuming you got a complete toolchai
 | **Node 18+** | required — the render CLI runs on `node` |
 | **bun** | preferred for installs; the scripts fall back to npm without it |
 | **ffmpeg** | auto-resolved: system build → `brew` (macOS) → `ffmpeg-static` (no sudo) |
-| **HyperFrames** | auto-installed, pinned, into `~/.hyperframes-cli` — an existing different version is warned about, not replaced |
+| **HyperFrames** | auto-installed, pinned, into `~/.hyperframes-cli`. A different version found there or in the project is not used: the pinned build is installed into that cache instead |
 | **Playwright + Chromium** | only for the capture path (`scripts/setup-capture-env.sh`) |
 | **`ELEVENLABS_API_KEY`** | only if you want narration |
 | **Disk** | ~500 MB one-off, shared across every project |
