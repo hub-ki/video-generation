@@ -1,0 +1,11 @@
+<!doctype html><meta charset="utf-8"><title>a compact floating consent card</title>
+<style>body{font:16px system-ui;margin:0;padding:24px}
+  /* OneTrust ships half- and third-width floating layouts. This one is ~7% of the viewport —
+     under any fixed 12% area threshold, and still unmistakably a cookie banner. */
+  #card{position:fixed;right:24px;bottom:24px;width:360px;background:#fff;border:1px solid #999;
+    padding:16px;z-index:9000}</style>
+<h1>Article</h1><p>Content the video is about.</p>
+<div id="card" class="cookie-consent-card"><p>Wir verwenden Cookies und verarbeiten Daten zu Datenschutzzwecken.</p>
+  <button id="no">Alle ablehnen</button></div>
+<script>document.getElementById('no').addEventListener('click',
+  () => document.getElementById('card').remove());</script>

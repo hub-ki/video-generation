@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><title>a long privacy wall over a short article</title>
+<style>body{font:16px system-ui;margin:0;padding:24px}
+  /* The wall holds far more text than the article does — which is exactly why a text-ratio rule
+     mistook it for the page itself. */
+  #wall{position:fixed;inset:0;overflow-y:auto;background:#fff;z-index:9999}
+  #prose{padding:24px}</style>
+<h1>Kurzmeldung</h1><p>Ein kurzer Artikel mit wenig Text.</p>
+<div id="wall"><div id="prose">
+  <h2>Datenschutzhinweise</h2>
+  <p>Wir und unsere Partner verarbeiten personenbezogene Daten zu folgenden Zwecken: Speichern von
+  Informationen auf einem Endgerät, Auswahl personalisierter Werbung, Messung der Werbeleistung,
+  Erstellung von Profilen für personalisierte Werbung, Auswahl personalisierter Inhalte,
+  Marktforschung zur Generierung von Erkenntnissen über Zielgruppen, Entwicklung und Verbesserung
+  von Diensten, Verwendung eingeschränkter Daten zur Auswahl von Inhalten, Verknüpfung
+  verschiedener Endgeräte, Empfang und Verwendung automatisch gesendeter Gerätemerkmale zur
+  Identifikation, Ablauf technischer Prozesse, Bereitstellung und Instandhaltung von Diensten.</p>
+  <button id="no">Alle ablehnen</button>
+</div></div>
+<script>document.getElementById('no').addEventListener('click',
+  () => document.getElementById('wall').remove());</script>

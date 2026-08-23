@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8"><title>sticky header with an unrelated Accept button</title>
+<style>body{font:16px system-ui;margin:0}
+  /* A perfectly ordinary site header: fixed, full width, 72px. It floats, and <main> is its
+     sibling — so "is it floating and is anything beside it" says yes. It does not INTERRUPT
+     anything, and the button in it has nothing to do with cookies. */
+  header{position:fixed;top:0;left:0;right:0;height:72px;background:#eee;display:flex;
+    align-items:center;justify-content:flex-end;padding:0 16px;z-index:900}
+  main{padding:96px 24px}</style>
+<header><button id="invite">Accept invitation</button></header>
+<main><h1>Team</h1><p>Somebody invited you to this workspace.</p><p id="state">untouched</p></main>
+<script>document.getElementById('invite').addEventListener('click',
+  () => document.getElementById('state').textContent = 'CLICKED');</script>

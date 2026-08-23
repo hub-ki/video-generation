@@ -1,0 +1,25 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>capture probe fixture</title>
+<style>
+  body { margin:0; background:#faf8f4; color:#14130f;
+         font:400 13px/1.4 -apple-system,system-ui,"Helvetica Neue",Arial,sans-serif; padding:28px 34px; }
+  h1 { font-size:22px; font-weight:800; margin:0 0 4px; }
+  .muted { color:#5a574f; font-size:12px; }
+  .row { display:flex; align-items:center; justify-content:space-between;
+         padding:12px 14px; border-radius:8px; margin-top:8px; }
+  .row:hover { background:#f4efe8; }              /* :hover must fire in the recording */
+  .badge { font-size:11px; background:#eee9e1; border-radius:99px; padding:3px 9px; }
+  /* 0.5 CSS-px stripes: resolvable ONLY if captured at deviceScaleFactor 2.
+     At 1x they collapse into flat grey — an unambiguous crispness discriminator. */
+  #stripes { margin-top:18px; width:300px; height:60px;
+    background:repeating-linear-gradient(90deg,#000 0,#000 .5px,#fff .5px,#fff 1px); }
+  #onepx { margin-top:8px; width:300px; height:40px;
+    background:repeating-linear-gradient(90deg,#000 0,#000 1px,#fff 1px,#fff 2px); }
+</style>
+<h1>Default permission</h1>
+<div class="muted">Applies to all tools in this connector unless a tool overrides it.</div>
+<div class="row" id="r1"><span>Web Search</span><span class="badge">Always execute</span></div>
+<div class="row" id="r2"><span>Fetch Page</span><span class="badge">Always execute</span></div>
+<div id="stripes"></div>
+<div id="onepx"></div>

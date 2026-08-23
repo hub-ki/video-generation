@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><title>an in-flow Agree before the real banner</title>
+<style>body{font:16px system-ui;margin:0;padding:24px}
+  #banner{position:fixed;left:0;right:0;bottom:0;height:200px;background:#fff;
+    border-top:2px solid #333;z-index:60;display:grid;place-items:center}</style>
+<h1>Terms</h1>
+<!-- First in document order, visible, and NOT in any overlay. A scan that stops at the first
+     visible match never reaches the real consent button below. -->
+<button id="inflow">Alle akzeptieren</button><p id="state">untouched</p>
+<p>Article text.</p>
+<div id="banner"><div><p>Wir und unsere Partner verwenden Cookies, um Daten zu Datenschutz- und Werbezwecken zu verarbeiten.</p><button id="real">Alle akzeptieren</button></div></div>
+<script>
+  document.getElementById('inflow').addEventListener('click',
+    () => document.getElementById('state').textContent = 'CLICKED');
+  document.getElementById('real').addEventListener('click',
+    () => document.getElementById('banner').remove());
+</script>

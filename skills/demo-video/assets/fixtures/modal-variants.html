@@ -1,0 +1,11 @@
+<!doctype html><meta charset="utf-8"><title>consent wall with no high z and no backdrop tint</title>
+<style>body{font:16px system-ui;margin:0;padding:24px}
+  /* z-index 120, and an OPAQUE backdrop — so neither the z-index branch nor the translucency
+     branch can carry this. The only signal left is the dialog role on the CHILD, which is far
+     too small to pass a viewport-coverage test on its own. */
+  #backdrop{position:fixed;inset:0;background:#f4f4f4;z-index:120;display:grid;place-items:center}
+  #box{width:320px;background:#fff;padding:20px;border:1px solid #ccc}</style>
+<h1>Article</h1><p>Content behind the wall.</p>
+<div id="backdrop"><div id="box" role="dialog" aria-modal="true"><p>Wir und unsere Partner verwenden Cookies, um Daten zu Datenschutz- und Werbezwecken zu verarbeiten.</p><button id="no">Ablehnen</button></div></div>
+<script>document.getElementById('no').addEventListener('click',
+  () => document.getElementById('backdrop').remove());</script>

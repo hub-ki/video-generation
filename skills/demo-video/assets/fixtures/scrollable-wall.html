@@ -1,0 +1,11 @@
+<!doctype html><meta charset="utf-8"><title>full-screen consent wall that scrolls itself</title>
+<style>body{font:16px system-ui;margin:0;padding:24px}
+  /* Bootstrap's .modal shape: full viewport, fixed, overflow-y:auto, long scrolling content, and
+     no ARIA role at all. Exempting anything scrollable made this invisible. */
+  #wall{position:fixed;inset:0;overflow-y:auto;background:rgba(255,255,255,.98);z-index:9999}
+  #prose{height:2400px;padding:24px}</style>
+<h1>Article</h1><p>Content behind the wall.</p>
+<div id="wall"><div id="prose"><h2>Datenschutz</h2><p>Sehr viel Text.</p>
+  <button id="no">Alle ablehnen</button></div></div>
+<script>document.getElementById('no').addEventListener('click',
+  () => document.getElementById('wall').remove());</script>

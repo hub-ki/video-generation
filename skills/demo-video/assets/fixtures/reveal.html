@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8"><title>ancestor reveal</title>
+<style>body{font:16px system-ui;margin:0;padding:24px}
+  /* The CONTAINER fades; the target itself is opacity:1 the whole time. */
+  #card{opacity:0;transition:opacity 1.2s linear}
+  #card.shown{opacity:1}
+  header{position:fixed;top:0;left:0;right:0;height:64px;background:#eee}
+  footer{position:fixed;bottom:0;left:0;right:0;height:48px;background:#ddd}
+  #pad{height:1200px}</style>
+<header>nav</header><div id="pad"></div>
+<div id="card"><h2 id="target">Pricing from 9 EUR</h2></div>
+<div id="pad2" style="height:1200px"></div><footer>promo</footer>
+<script>setTimeout(() => document.getElementById('card').classList.add('shown'), 300);</script>

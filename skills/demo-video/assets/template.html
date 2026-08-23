@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <!--
+    TEMPLATE: floating-window + spotlight demo (see references/design-system.md).
+    Copy this into <project>/index.html and:
+      1. Run the brand step FIRST (references/brand-style.md) — `apply-brand.mjs` rewrites the
+         BRAND token block and both LOGO blocks below from your brand.json. The values shipped
+         here are a deliberately neutral placeholder set, not a design.
+      2. Set WIN + .win/.scrim dims to match your chrome-cropped asset aspect.
+      3. Add one <video>/<img> per beat (alternating data-track-index 1/2), a spotlight
+         only on key/result beats, and an overlay card per beat.
+      4. Register each with win()/spot()/label() in the timeline, crossfading; freezes use
+         the hard-cut trio (fadeInHardOut/hold/hardInFadeOut).
+    Verify with `node <skill>/scripts/audit-composition.mjs .` (must exit 0), then
+    `hyperframes snapshot --at ...` before rendering.
+  -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      /* BRAND:START — generated from brand.json by scripts/apply-brand.mjs.
+         Edit brand.json and re-run it; hand-edits here are overwritten on the next run.
+         Placeholder values: a neutral warm grey. Replace them with a real brand before
+         you ship anything — see references/brand-style.md. */
+      /* Black and white on purpose, not a warm neutral. A tinted default reads as a brand the
+         video does not have — a beige canvas is still somebody's beige. Everything here is a
+         token; `apply-brand.mjs` overwrites this block. */
+      :root { --h:1080px; --w:1920px;
+        --bg:#ffffff; --card:#ffffff; --ink:#000000; --ink2:#666666;
+        --accent:#000000; --hl:#ededed; --hl2:#ededed;
+        --sans:"Inter","Noto Sans","Liberation Sans",system-ui,sans-serif; }
+      /* BRAND:END */
+      html, body { width:1920px; height:1080px; overflow:hidden; }
+      /* Plain surface. The dot grid that used to live here was a house style, not a neutral
+         default — it survived every "swap the tokens" pass because it is drawn from a variable
+         rather than being one, and it put one company's canvas behind other people's videos.
+         Set --dot-size to switch it back on if you actually want it. */
+      #root { position:relative; width:1920px; height:1080px; font-family:var(--sans);
+        background-color:var(--bg); }
+      .clip { position:absolute; inset:0; }
+
+      /* FULL-BLEED by default: the recording fills the frame. A window frame makes the content
+         smaller, and the content is the point. Set left/top/width/height (and a radius and
+         shadow) if you want the framed look back; `scale = WIN.w / asset_w` for spotlight coords
+         either way. */
+      .win { position:absolute; inset:0; width:var(--w); height:var(--h);
+        object-fit:cover; background:#fff; will-change:opacity; }
+
+      /* spotlight — NOTE the explicit right/bottom auto (never `inset:auto`) */
+      .scrim { position:absolute; top:0; left:0; right:auto; bottom:auto;
+        width:var(--w); height:var(--h); overflow:hidden; pointer-events:none; will-change:opacity; }
+      /* One element, one rule: a 9999px ring shadow dims everything except the cut-out. No border
+         around the lit element — the brightness step is the edge. Pad the target by 14px. */
+      .spot { position:absolute; border-radius:14px;
+        box-shadow:0 0 0 9999px rgba(0,0,0,.62); transition:all .45s ease; }
+
+      /* overlay card — always bottom-left */
+      /* Every size below is a RATIO OF FRAME HEIGHT, written as calc() on --h. That is the one
+         rule worth keeping if you change nothing else: the same layout in pixels breaks between
+         1080p and 4K, and it breaks quietly — text that was comfortable becomes tiny. */
+      .ov { position:absolute; left:calc(var(--w) * .033); bottom:calc(var(--h) * .059);
+        background:var(--card); border-radius:14px; max-width:52%;
+        padding:calc(var(--h) * .028) calc(var(--w) * .021);
+        will-change:transform,opacity; box-shadow:0 10px 40px rgba(0,0,0,.28); }
+      /* the accent bar above the headline: the card's only ornament */
+      .ov::before { content:""; display:block; width:calc(var(--w) * .031); height:calc(var(--h) * .0074);
+        border-radius:999px; background:var(--accent); margin-bottom:calc(var(--h) * .019); }
+      /* verify-material.mjs sends you here when a card covers its beat's subject; without
+         these rules the class it names does nothing. */
+      .ov.at-top { top:118px; bottom:auto; }
+      .ov.at-right { left:auto; right:96px; }
+      /* the headline carries a highlighter bar. `display:inline` + box-decoration-break:clone
+         re-paints the gradient per wrapped line, so a two-line headline gets two tight
+         highlighter strokes instead of one block behind empty space. 38px is what holds a full
+         sentence to 2 lines at this card's max-width — re-check on every card that changes,
+         because line count depends on the specific words, not on character count. */
+      /* No highlighter by default. A bar behind the WHOLE headline marks nothing — if every word
+         is emphasised, none is — and it was another piece of house style riding along in a
+         "neutral" template. Wrap the few words that carry the point in <mark> when you want it. */
+      .ov .head { display:block; font-weight:700; font-size:calc(var(--h) * .0426);
+        line-height:1.15; letter-spacing:-.01em; color:var(--ink); }
+      .ov .head mark { background:linear-gradient(90deg,var(--hl) 0%,var(--hl2) 100%);
+        color:inherit; padding:0.06em 0.18em; border-radius:6px;
+        -webkit-box-decoration-break:clone; box-decoration-break:clone; }
+      /* the supporting line: a headline alone states a claim and leaves the viewer to guess what
+         they are looking at. */
+      /* 34ch, not a percentage: an explanatory line wraps well by character count and badly by
+         frame width. Written to be READ — keep it separate from the spoken track, which is a
+         different channel with a different length and tone. */
+      .ov .sub { display:block; margin-top:.5em; font-size:calc(var(--h) * .0264);
+        line-height:1.4; color:var(--ink2); max-width:34ch; }
+
+      /* intro / outro */
+      .card { display:grid; place-items:center; }
+      .card .inner { text-align:center; will-change:transform,opacity; }
+      .logo { width:72px; margin:0 auto 34px; color:var(--ink); display:block; }
+      .title { font-weight:850; font-size:128px; line-height:.98; letter-spacing:-.03em; color:var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="16" data-width="1920" data-height="1080">
+
+      <!-- BEATS: one per moment, alternating tracks for crossfade -->
+      <video id="vA" class="clip win" src="assets/wA.mp4" data-start="3.5" data-duration="5.6" data-track-index="1" muted playsinline></video>
+      <img   id="vB" class="clip win" src="assets/wB.png" data-start="8.4" data-duration="5.6" data-track-index="2" alt="result" />
+
+      <!-- SPOTLIGHT: only on key/result beats. spot left/top/width/height = source-elem * scale.
+           Spotlights and cards must END BEFORE the outro starts (audit rule 6). -->
+      <div id="spB" class="clip scrim" data-start="9.1" data-duration="4.2" data-track-index="3">
+        <div class="spot" style="left:706px; top:202px; width:500px; height:272px;"></div>
+      </div>
+
+      <!-- OVERLAY CARDS: one short, natural-sounding headline (topic phrase or short
+           sentence, never an enumeration), no kicker, bottom-left -->
+      <div id="oA" class="clip" data-start="4.2" data-duration="4.6" data-track-index="6"><div class="ov"><div class="head">Headline line one<br/>line two.</div><div class="sub">One supporting sentence: what the viewer is looking at, in plain words.</div></div></div>
+      <div id="oB" class="clip" data-start="9.1" data-duration="4.2" data-track-index="6"><div class="ov"><div class="head">The payoff, <mark>in a phrase</mark>.</div><div class="sub">Mark only the words that carry the point — see references/design-system.md.</div></div></div>
+
+      <!-- INTRO — logo + video title, no subtitle -->
+      <div id="intro" class="clip card" data-start="0" data-duration="4.2" data-track-index="5">
+        <div class="inner">
+          <!-- LOGO:START intro — placeholder mark. `apply-brand.mjs` replaces everything between
+               the markers with your brand's logo, at brand.json's logo.width (default 72px). -->
+          <svg class="logo" viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="4" role="img" aria-label="Your brand">
+            <rect x="6" y="6" width="60" height="60" rx="16" />
+            <path d="M24 46V26l12 14 12-14v20" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <!-- LOGO:END -->
+          <div class="title">Title</div>
+        </div>
+      </div>
+
+      <!-- OUTRO — logo only, no title (see design-system.md "Intro / outro").
+           Every spotlight/card must end before this starts (audit rule 6). -->
+      <div id="outro" class="clip card" data-start="13.3" data-duration="2.7" data-track-index="5">
+        <div class="inner">
+          <!-- LOGO:START outro -->
+          <svg class="logo" style="width:190px" viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="4" role="img" aria-label="Your brand">
+            <rect x="6" y="6" width="60" height="60" rx="16" />
+            <path d="M24 46V26l12 14 12-14v20" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <!-- LOGO:END -->
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      var tl = gsap.timeline({ paused: true }), XF = 0.7;
+      function win(sel,t,tEnd){ tl.fromTo(sel,{opacity:0},{opacity:1,duration:XF,ease:"power1.inOut"},t);
+        tl.to(sel,{opacity:0,duration:XF,ease:"power1.inOut"},tEnd-XF); tl.set(sel,{opacity:0},tEnd); }
+      function label(sel,t,tEnd){ tl.fromTo(sel+" .ov",{opacity:0,y:26},{opacity:1,y:0,duration:.6,ease:"power3.out"},t+.15);
+        tl.to(sel+" .ov",{opacity:0,y:14,duration:.45,ease:"power2.in"},tEnd-.5); tl.set(sel+" .ov",{opacity:0},tEnd); }
+      function spot(sel,t,tEnd){ tl.fromTo(sel,{opacity:0},{opacity:1,duration:.9,ease:"power2.inOut"},t+.1);
+        tl.to(sel,{opacity:0,duration:.55,ease:"power2.in"},tEnd-.6); tl.set(sel,{opacity:0},tEnd); }
+
+      // Freeze-frame trio (design-system.md → Freeze frames). The boundaries of a freeze are
+      // HARD CUTS at frame-identical stills — never win(): crossfading two identical frames
+      // dips through the background. Pair fades: a fade-out needs a fade-in partner.
+      function fadeInHardOut(sel,t,tEnd){ tl.fromTo(sel,{opacity:0},{opacity:1,duration:XF,ease:"power1.inOut"},t);
+        tl.set(sel,{opacity:0},tEnd); }
+      function hold(sel,t,tEnd){ tl.set(sel,{opacity:1},t); tl.set(sel,{opacity:0},tEnd); }
+      function hardInFadeOut(sel,t,tEnd){ tl.set(sel,{opacity:1},t);
+        tl.fromTo(sel,{opacity:1},{opacity:0,duration:XF,ease:"power1.inOut"},tEnd-XF); tl.set(sel,{opacity:0},tEnd); }
+
+      tl.fromTo("#intro .inner",{opacity:0,y:26},{opacity:1,y:0,duration:.9,ease:"power3.out"},.2);
+      tl.to("#intro",{opacity:0,duration:XF,ease:"power1.inOut"},4.2-XF); tl.set("#intro",{opacity:0},4.2);
+
+      win("#vA",3.5,9.1);  win("#vB",8.4,14.0);
+      spot("#spB",9.1,13.3);
+      label("#oA",4.2,8.8); label("#oB",9.1,13.3);
+
+      // Outro crossfades in over the last beat's fade-out (they are each other's fade partners).
+      tl.fromTo("#outro",{opacity:0},{opacity:1,duration:XF,ease:"power1.inOut"},13.3);
+      tl.fromTo("#outro .inner",{opacity:0,y:26},{opacity:1,y:0,duration:.9,ease:"power3.out"},13.65);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

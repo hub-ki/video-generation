@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><title>a real modal that is not about consent</title>
+<style>body{font:16px system-ui;margin:0;padding:24px}
+  /* Fixed, centred, occluding, not furniture, not the page surface — it passes every positional
+     test there is. It is simply not a cookie banner, and pressing it changes something real. */
+  #backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;display:grid;place-items:center}
+  #card{background:#fff;padding:28px;width:420px}</style>
+<h1>Workspace</h1><p>Article content.</p>
+<div id="backdrop"><div id="card" role="dialog" aria-modal="true">
+  <h2>You have been invited</h2>
+  <p>Jane invited you to the Marketing workspace.</p>
+  <button id="accept">Accept invitation</button>
+</div></div>
+<p id="state">untouched</p>
+<footer><a href="/privacy">Datenschutz</a> · <a href="/cookies">Cookie-Einstellungen</a> · Wir verwenden Cookies auf dieser Website.</footer>
+<script>document.getElementById('accept').addEventListener('click',
+  () => document.getElementById('state').textContent = 'CLICKED');</script>

@@ -1,0 +1,31 @@
+# No media binaries in git. Only source (md/js/mjs/sh/html/svg/json) is committed;
+# everything captured, derived, or rendered stays local:
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.mp4
+*.webm
+*.mov
+*.mp3
+
+# README media is the one exception — an image kept outside the repo renders as a broken link
+!docs/media/**
+
+# an extracted brand logo is the user's asset, not this repo's
+skills/demo-video/assets/brand-logo.*
+
+# reference frames are regenerable (`hyperframes snapshot` of any real build) — local-only
+skills/demo-video/assets/reference-frames/
+
+# per-project working dirs the pipeline creates
+videos/
+renders/
+out/
+snapshots/
+node_modules/
+
+# capture rig state — cookies, never commit
+storageState.json
+app-state.json

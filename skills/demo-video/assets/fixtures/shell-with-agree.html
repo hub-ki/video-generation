@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8"><title>an Agree button inside a legitimate fixed app shell</title>
+<style>body{font:16px system-ui;margin:0}
+  /* The app's own surface: fixed, full viewport, its own scroller, nothing beside it in body.
+     A consent-named button INSIDE it is app content, not a consent control. */
+  #app{position:fixed;inset:0;overflow:auto;background:#fff;z-index:4000}
+  #tall{height:2600px;padding:24px}</style>
+<div id="app"><div id="tall">
+  <h1>Settings</h1><p>Terms acceptance for this workspace.</p>
+  <button id="terms">Alle akzeptieren</button><p id="state">untouched</p>
+</div></div>
+<script>document.getElementById('terms').addEventListener('click',
+  () => document.getElementById('state').textContent = 'CLICKED');</script>

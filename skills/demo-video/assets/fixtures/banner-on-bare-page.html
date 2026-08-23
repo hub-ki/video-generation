@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><title>a banner on a page with almost nothing else</title>
+<style>body{font:16px system-ui;margin:0;padding:24px}
+  /* Deliberately tiny, so nothing here reaches the "substantial sibling" bar on ANY platform.
+     Left to default metrics this fixture passed on Linux (h1 at 5.16% of the viewport) and failed
+     on macOS — a regression test that depends on font rendering tests the font, not the code. */
+  h1{font-size:12px;margin:2px 0} p{font-size:12px;margin:2px 0}
+  /* Nothing beside the banner is "substantial": the heading is short, the paragraph is short.
+     A rule that decided "is this the page itself?" by looking at the siblings therefore came down
+     to the rendered height of an <h1> — 5.16% of the viewport on one platform, just under the
+     threshold on another. The banner is 25% of the viewport; it cannot be the page. */
+  #banner{position:fixed;left:0;right:0;bottom:0;height:200px;background:#fff;
+    border-top:2px solid #333;z-index:60;display:grid;place-items:center}</style>
+<h1>Titel</h1><p>Kurz.</p>
+<div id="banner"><div>
+  <p>Wir und unsere Partner verwenden Cookies, um Daten zu Datenschutz- und Werbezwecken zu
+  verarbeiten.</p>
+  <button id="no">Alle ablehnen</button></div></div>

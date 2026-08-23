@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>small native top-layer dialog</title>
+<style>body{font:16px system-ui;margin:0;padding:24px}
+  /* 320x160, centred. Its OWN box covers ~4% of the viewport — but the ::backdrop covers all of
+     it, and ::backdrop is not an element, so no box-sampling test can ever see this. */
+  dialog{border:0;padding:24px;width:320px}</style>
+<h1>Article</h1><p>Content behind the wall.</p>
+<dialog id="wall"><button id="no">Ablehnen</button></dialog>
+<script>document.getElementById('wall').showModal();
+  document.getElementById('no').addEventListener('click',
+    () => document.getElementById('wall').close());</script>

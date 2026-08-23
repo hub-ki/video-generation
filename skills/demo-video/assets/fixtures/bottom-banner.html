@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>ordinary bottom cookie banner</title>
+<style>body{font:16px system-ui;margin:0;padding:24px}
+  /* The most common consent wall in Europe: a fixed strip across the bottom at ~22% height. It
+     covers nowhere near the viewport, so a page-coverage test calls this page clear. */
+  #banner{position:fixed;left:0;right:0;bottom:0;height:180px;background:#fff;
+    border-top:2px solid #333;z-index:50;display:grid;place-items:center}</style>
+<h1>Article</h1><p>Content the video is actually about.</p>
+<div id="banner"><div><p>Wir und unsere Partner verwenden Cookies, um Daten zu Datenschutz- und Werbezwecken zu verarbeiten.</p><button id="no">Alle ablehnen</button></div></div>
+<script>document.getElementById('no').addEventListener('click',
+  () => document.getElementById('banner').remove());</script>

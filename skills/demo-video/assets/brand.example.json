@@ -1,0 +1,23 @@
+{
+  "name": "Acme",
+  "language": "en",
+  "colors": {
+    "bg": "#f1eee7",
+    "ink": "#15110c",
+    "ink2": "#5f584e",
+    "card": "#fcfaf6",
+    "highlight": [
+      "#f2eda8",
+      "#f7f5d4"
+    ],
+    "dot": "rgba(21,17,12,.10)"
+  },
+  "font": {
+    "sans": "\"Inter\",-apple-system,system-ui,\"Segoe UI\",Arial,sans-serif"
+  },
+  "logo": {
+    "path": "./assets/brand-logo.svg",
+    "width": 72,
+    "outroWidth": 190
+  }
+}

@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8"><title>consent wall rendered in an iframe</title>
+<style>body{font:16px system-ui;margin:0;padding:24px}
+  /* Sourcepoint's shape, and the one that broke the structural own-surface test: the wall lives
+     in its own document, where it legitimately has no siblings — so a check that runs INSIDE the
+     candidate's document calls it "the page itself" and refuses to press its button. The overlay
+     evidence is in the PARENT: the iframe is fixed and full-viewport. */
+  #sp_message_iframe_1{position:fixed;inset:0;width:100%;height:100%;border:0;z-index:2147483647}</style>
+<h1>Article</h1><p>Content behind the wall.</p>
+<iframe id="sp_message_iframe_1" src="./iframe-wall-inner.html"></iframe>
+<script>addEventListener('message', (event) => {
+  if (event.data === 'consent-done') document.getElementById('sp_message_iframe_1').remove();
+});</script>

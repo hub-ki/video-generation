@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><title>hidden duplicate + keep + promo</title>
+<style>body{font:16px system-ui;margin:0;padding:24px}
+  #wall{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;display:grid;place-items:center}
+  .hidden{display:none}
+  #keepme{position:fixed;bottom:0;left:0;width:100%;height:40px;background:#cfc}</style>
+<div id="wall">
+  <!-- The mobile variant sorts first and is hidden. The visible one must still be found. -->
+  <button class="cm-btn-decline hidden">Ablehnen (mobil)</button>
+  <button class="cm-btn-decline">Ablehnen</button>
+</div>
+<nav><h2>Preise ab 9 EUR</h2></nav>
+<div class="werbung"><h2>Preise ab 1 EUR</h2></div>
+<article><div id="wrapper"><h2 id="real">Preise ab 9 EUR im Jahr</h2></div></article>
+<div id="crisp-chatbox">chat</div><div id="keepme" class="zsiq_floatmain">keep</div>
+<script>document.querySelector('#wall .cm-btn-decline:not(.hidden)')
+  .addEventListener('click', () => document.getElementById('wall').remove());</script>

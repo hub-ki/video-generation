@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>an Agree button in the page flow</title>
+<style>body{font:16px system-ui;margin:0;padding:24px}</style>
+<h1>Terms of service</h1><p>Scroll and accept.</p>
+<!-- Not fixed, not sticky, not in any overlay: an ordinary in-flow control. Never ours to press,
+     even though a consent wall elsewhere on the page might make the page "covered". -->
+<button id="terms">Alle akzeptieren</button>
+<p id="state">untouched</p>
+<div id="deco" style="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999"></div>
+<script>document.getElementById('terms').addEventListener('click',
+  () => document.getElementById('state').textContent = 'CLICKED');</script>

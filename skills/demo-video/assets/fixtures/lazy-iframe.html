@@ -1,0 +1,11 @@
+<!doctype html><meta charset="utf-8"><title>lazy iframe</title>
+<style>body{font:16px system-ui;margin:0}#spacer{height:4000px}</style>
+<h1>Article</h1><p id="body">Real content.</p>
+<div id="banner" style="position:fixed;left:0;right:0;bottom:0;height:200px;background:#fff;z-index:70;display:grid;place-items:center">
+  <div><p>Wir verwenden Cookies und verarbeiten Daten zu Datenschutzzwecken.</p>
+  <button>Alle ablehnen</button></div></div>
+<div id="spacer"></div>
+<!-- Never loaded, so it has no execution context: a locator query against it never settles. -->
+<iframe loading="lazy" src="https://255.255.255.255/never-1" width="300" height="200"></iframe>
+<iframe loading="lazy" src="https://255.255.255.254/never-2" width="300" height="200"></iframe>
+<iframe loading="lazy" src="https://255.255.255.253/never-3" width="300" height="200"></iframe>

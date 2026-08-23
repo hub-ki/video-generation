@@ -1,0 +1,18 @@
+<!doctype html><meta charset="utf-8"><title>late consent</title>
+<style>body{font:16px system-ui;margin:0}#wall{position:fixed;inset:0;background:rgba(0,0,0,.8);
+z-index:2147483647;display:none;place-items:center}#wall.up{display:grid}</style>
+<h1>Article</h1><p id="body">Content that must not be filmed behind a dialog.</p>
+<div id="wall"><div>
+  <!-- The consent sentence is not decoration: a generic match must prove it sits in a
+       surface whose words are about consent, or a legitimate "Accept invitation" modal
+       passes every positional test. Real banners always carry this text — it is legally
+       required — so a fixture without it was the unrealistic thing, not the rule. -->
+  <p>Wir und unsere Partner verwenden Cookies, um Daten zu Datenschutz- und Werbezwecken zu verarbeiten.</p>
+  <button id="ok">Alle akzeptieren</button></div></div>
+<script>
+  // The banner arrives 400ms after load. A one-shot scan misses it and reports "no wall".
+  setTimeout(() => { document.getElementById('wall').classList.add('up');
+    document.body.style.overflow = 'hidden'; }, 400);
+  document.getElementById('ok').addEventListener('click', () => {
+    document.getElementById('wall').classList.remove('up'); document.body.style.overflow = ''; });
+</script>

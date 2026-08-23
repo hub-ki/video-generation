@@ -1,0 +1,14 @@
+{
+  "name": "video-generation",
+  "private": true,
+  "type": "module",
+  "description": "Agent skills that turn an app or a public website into a designed demo video",
+  "scripts": {
+    "postinstall": "node node_modules/playwright/cli.js install chromium",
+    "validate": "node scripts/validate-skills.mjs",
+    "test": "node scripts/validate-skills.mjs && node skills/demo-video/scripts/test-foreign-sites.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.61.1"
+  }
+}

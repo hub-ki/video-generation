@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><title>legitimate translucent high-z app shell</title>
+<style>body{font:16px system-ui;margin:0;background:#222}
+  /* A real application root: full viewport, fixed, z-index 5000, translucent surface, its own
+     scroller. It is the page, not a wall — and every one of those properties also describes a
+     consent backdrop, which is why the check needs more than one of them. */
+  #app{position:fixed;inset:0;overflow:auto;background:rgba(255,255,255,.85);z-index:5000}
+  #tall{height:3000px;padding:24px}</style>
+<div id="app"><div id="tall"><h1 id="heading">Dashboard</h1><p>Inner scroll container.</p></div></div>

@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><title>an ordinary responsive iframe embed</title>
+<style>body{font:16px system-ui;margin:0;padding:24px}
+  /* The classic 16:9 embed wrapper: absolutely positioned, full width. Accepting `absolute` as
+     overlay evidence made every video and form embed look like a consent iframe. */
+  .ratio{position:relative;width:100%;padding-top:56.25%}
+  .ratio > iframe{position:absolute;inset:0;width:100%;height:100%;border:0}</style>
+<h1>Article</h1><p>With an embedded widget.</p>
+<div class="ratio"><iframe src="./responsive-embed-inner.html"></iframe></div>
