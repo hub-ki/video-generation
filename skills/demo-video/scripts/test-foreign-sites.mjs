@@ -108,19 +108,30 @@ await withFixture('reveal.html', async (page) => {
   const target = await findByText(page, /Pricing from/);
   check('finds the target', Boolean(target));
 
-  // Immediately after scrolling, the CARD is mid-fade while the target itself is opacity:1.
-  await page.evaluate(() => document.getElementById('card').classList.remove('shown'));
+  // The CONTAINER is translucent while the target itself is opacity:1. Held there rather than
+  // caught mid-fade: the refusal names which rule fired, and on a loaded machine a probe can
+  // arrive after the transition has finished, where the honest answer is a different rule.
+  await page.evaluate(() => {
+    const card = document.getElementById('card');
+    card.style.transition = 'none';
+    card.style.opacity = '0.15';
+  });
   await scrollToElement(target);
-  await page.evaluate(() => document.getElementById('card').classList.add('shown'));
   let refused = false;
   try {
     await stableRect(target, { timeoutMs: 400, framesStill: 3 });
   } catch (error) {
     refused = /transparent/.test(error.message);
   }
-  check('refuses a target inside a fading container', refused);
+  check('refuses a target inside a translucent container', refused);
 
-  await page.waitForTimeout(1500);
+  await page.evaluate(() => {
+    const card = document.getElementById('card');
+    card.style.transition = '';
+    card.style.opacity = '';
+    card.classList.add('shown');
+  });
+  await page.waitForFunction(() => getComputedStyle(document.getElementById('card')).opacity === '1');
   const rect = await stableRect(target);
   check('measures it once the container has finished', rect.settled && rect.inViewport, JSON.stringify(rect));
   check('clears the sticky header', rect.y >= insets.top, `y=${rect.y} header=${insets.top}`);
